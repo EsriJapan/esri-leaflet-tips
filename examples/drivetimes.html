@@ -107,16 +107,20 @@
     var driveTimes = L.featureGroup();
     map.addLayer(driveTimes);
 
-    map.on('click', function (evt) {
-      authPane.innerHTML = '取得中...';
-      driveTimes.clearLayers();
-      gpTask.setParam("Input_Location", evt.latlng);
-      gpTask.run(driveTimeCallback);
-    });
+    map.on('click', runDriveTimes);
+  }
+
+  // 到達圏解析の実行
+  function runDriveTimes(evt) {
+    authPane.innerHTML = '取得中...';
+    driveTimes.clearLayers();
+    gpTask.setParam("Input_Location", evt.latlng);
+    gpTask.run(driveTimeCallback);
   }
 
   // 到達圏解析のコールバック
   function driveTimeCallback(error, response, raw){
+    map.off('click', runDriveTimes)
     authPane.innerHTML = '結果が表示されました';
     driveTimes.addLayer(L.geoJson(response.Output_Drive_Time_Polygons));
   }
