@@ -76,6 +76,8 @@
     e.preventDefault();
   });
 
+  if (window.location.host == 'esrijapan.github.io' && window.location.protocol != 'https:') {
+    window.location.protocol = 'https';
   }
 
   // 地図の初期化
