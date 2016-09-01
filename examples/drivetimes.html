@@ -125,11 +125,11 @@
     authPane.innerHTML = '結果が表示されました';
     var results = L.geoJson(response.Service_Areas, {
       style: function (feature) {
-        if (feature.properties.ToBreak === 5) {
-          return {color: '#ff6500', fillColor: '#ff6500'};
+        if (feature.properties.ToBreak === 10) {
+          return {color: '#ff6600', fillColor: '#ff6600'};
         }
-        else if (feature.properties.ToBreak === 10) {
-          return {color: '#ff009a', fillColor: '#ff009a'};
+        else if (feature.properties.ToBreak === 5) {
+          return {color: '#ff0099', fillColor: '#ff0099'};
         }
       }
     });
