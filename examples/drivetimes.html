@@ -86,6 +86,7 @@
 
   // 地図の初期化
   var map = L.map('map').setView([35.6792, 139.7406], 15);
+  var driveTimes = L.featureGroup().addTo(map);
   L.esri.basemapLayer('Streets').addTo(map);
   map.locate();
 
@@ -112,15 +113,14 @@
 
   // 到達圏解析の実行
   function runDriveTimes(evt) {
+    map.off('click', runDriveTimes);
     authPane.innerHTML = '取得中...';
-    driveTimes.clearLayers();
     gpTask.setParam("Input_Location", evt.latlng);
     gpTask.run(driveTimeCallback);
   }
 
   // 到達圏解析のコールバック
   function driveTimeCallback(error, response, raw){
-    map.off('click', runDriveTimes)
     authPane.innerHTML = '結果が表示されました';
     driveTimes.addLayer(L.geoJson(response.Output_Drive_Time_Polygons));
   }
