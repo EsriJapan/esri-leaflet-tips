@@ -73,7 +73,7 @@
     L.esri.get('https://www.arcgis.com/sharing/rest/portals/self', {
       token: token
     }, function (error, response) {
-      authPane.innerHTML = 'クリックした地点から自動車で 5分、10 分以内の到達圏を表示します';
+      authPane.innerHTML = 'クリックした地点から徒歩で 5 分、10 分以内の無料公衆無線ＬＡＮスポットを表示します';
       initDriveTimes(token);
     });
   };
@@ -112,6 +112,7 @@
 
     gpTask = gpService.createTask();
     gpTask.setParam('break_values', '5 10');
+    gpTask.setParam('impedance', 'Walk Time');
     gpTask.setOutputParam('Service_Areas');
 
     map.on('click', runDriveTimes);
