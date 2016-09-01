@@ -55,6 +55,9 @@
   var authPane = document.getElementById('auth');
   var signInButton = document.getElementById('sign-in');
 
+  var gpService;
+  var gpTask;
+
   // OAuth 認証ウィンドウ
   function oauth(callback) {
     if(accessToken){
@@ -96,17 +99,13 @@
 
   // 到達圏解析タスクの初期化
   function initDriveTimes() {
-    var gpService = L.esri.GP.service({
+    gpService = L.esri.GP.service({
       url: "https://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Network/ESRI_DriveTime_US/GPServer/CreateDriveTimePolygons",
       useCors: false
     });
 
-    var gpTask = gpService.createTask();
-
+    gpTask = gpService.createTask();
     gpTask.setParam("Drive_Times", "5 10");
-
-    var driveTimes = L.featureGroup();
-    map.addLayer(driveTimes);
 
     map.on('click', runDriveTimes);
   }
