@@ -74,7 +74,7 @@
       token: token
     }, function (error, response) {
       authPane.innerHTML = 'クリックした地点から自動車で 5分、10 分以内の到達圏を表示します';
-      initDriveTimes();
+      initDriveTimes(token);
     });
   };
 
@@ -98,14 +98,16 @@
   });
 
   // 到達圏解析タスクの初期化
-  function initDriveTimes() {
+  function initDriveTimes(token) {
     gpService = L.esri.GP.service({
-      url: "https://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Network/ESRI_DriveTime_US/GPServer/CreateDriveTimePolygons",
-      useCors: false
+      url: "http://logistics.arcgis.com/arcgis/rest/services/World/ServiceAreas/GPServer/GenerateServiceAreas",
+      async: true,
+      token: token
     });
 
     gpTask = gpService.createTask();
-    gpTask.setParam("Drive_Times", "5 10");
+    gpTask.setParam('break_values', '5 10');
+    gpTask.setOutputParam('Service_Areas');
 
     map.on('click', runDriveTimes);
   }
@@ -114,14 +116,14 @@
   function runDriveTimes(evt) {
     map.off('click', runDriveTimes);
     authPane.innerHTML = '取得中...';
-    gpTask.setParam("Input_Location", evt.latlng);
+    gpTask.setParam('facilities', evt.latlng);
     gpTask.run(driveTimeCallback);
   }
 
   // 到達圏解析のコールバック
   function driveTimeCallback(error, response, raw){
     authPane.innerHTML = '結果が表示されました';
-    driveTimes.addLayer(L.geoJson(response.Output_Drive_Time_Polygons));
+    driveTimes.addLayer(L.geoJson(response.Service_Areas));
   }
 </script>
 
