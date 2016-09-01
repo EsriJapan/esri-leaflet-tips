@@ -145,11 +145,11 @@
     runQuery(area);
   }
 
-  // 
+  // 空間検索の実行
   function runQuery(area) {
     // 空間検索用クエリ
     var query = L.esri.query({
-      url: 'http://services3.arcgis.com/iH4Iz7CEdh5xTJYb/arcgis/rest/services/free_wifi_U8/FeatureServer/0' // 「無料公衆無線ＬＡＮスポット」（国土交通省観光庁）を加工
+      url: 'https://services3.arcgis.com/iH4Iz7CEdh5xTJYb/arcgis/rest/services/free_wifi_U8/FeatureServer/0' // 「無料公衆無線ＬＡＮスポット」（国土交通省観光庁）を加工
     });
     query.within(area);
     // クエリの実行
