@@ -101,7 +101,8 @@
   function initDriveTimes(token) {
     gpService = L.esri.GP.service({
       url: "https://logistics.arcgis.com/arcgis/rest/services/World/ServiceAreas/GPServer/GenerateServiceAreas",
-      token: token
+      token: token,
+      asyncInterval: 1
     });
 
     gpTask = gpService.createTask();
