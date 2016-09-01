@@ -1,0 +1,163 @@
+<html>
+<head>
+  <meta charset=utf-8 />
+  <title>到達圏内の施設検索 - Esri Leaflet</title>
+  <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+
+  <!-- Leaflet CDN-->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/leaflet/1.0.0-rc.3/leaflet.css" />
+  <script src="https://cdn.jsdelivr.net/leaflet/1.0.0-rc.3/leaflet-src.js"></script>
+
+  <!-- Esri Leaflet CDN -->
+  <script src="https://cdn.jsdelivr.net/leaflet.esri/2.0.2/esri-leaflet.js"></script>
+
+  <!-- Esri Leaflet Geoprocessing CDN -->
+  <script src="https://cdn.jsdelivr.net/leaflet.esri.gp/2.0.0/esri-leaflet-gp.js"></script>
+
+  <style>
+    body { margin:0; padding:0; }
+    #map { position: absolute; top:0; bottom:0; right:0; left:0; }
+    #auth {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 1000;
+      background: white;
+      padding: 1em;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+      border-radius: 4px;
+    }
+
+    #auth input {
+      display: inline-block;
+      border: 1px solid #999;
+      font-size: 14px;
+      border-radius: 4px;
+      height: 28px;
+      line-height: 28px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+<div id="auth">
+  <a href="#" id="sign-in">サインイン</a>
+</div>
+
+<script>
+  var clientID = 'dIWXMbR2C6zbzNm5';
+  var accessToken;
+  var callbacks = [];
+  var protocol = window.location.protocol;
+  var callbackPage = protocol + '//esrijapan.github.io/esri-leaflet-tips/examples/oauth/callback.html';
+
+  var authPane = document.getElementById('auth');
+  var signInButton = document.getElementById('sign-in');
+
+  var gpService;
+  var gpTask;
+
+  // OAuth 認証ウィンドウ
+  function oauth(callback) {
+    if(accessToken){
+      callback(accessToken);
+    } else {
+      callbacks.push(callback);
+      window.open('https://www.arcgis.com/sharing/oauth2/authorize?client_id=' + clientID + '&response_type=token&expiration=20160&redirect_uri=' + window.encodeURIComponent(callbackPage), 'oauth', 'height=400,width=600,menubar=no,location=yes,resizable=yes,scrollbars=yes,status=yes');
+    }
+  }
+
+  // OAuth 認証完了のコールバック
+  window.oauthCallback = function (token) {
+    L.esri.get('https://www.arcgis.com/sharing/rest/portals/self', {
+      token: token
+    }, function (error, response) {
+      authPane.innerHTML = 'クリックした地点から自動車で 5分、10 分以内の到達圏を表示します';
+      initDriveTimes(token);
+    });
+  };
+
+  signInButton.addEventListener('click', function (e) {
+    oauth();
+    e.preventDefault();
+  });
+
+  if (window.location.host == 'esrijapan.github.io' && window.location.protocol != 'https:') {
+    window.location.protocol = 'https';
+  }
+
+  // 地図の初期化
+  var map = L.map('map').setView([35.6792, 139.7406], 13);
+  var driveTimes = L.featureGroup().addTo(map);
+  var filterResults = L.geoJson(null, {
+    onEachFeature: function (feature, layer) {
+      layer.bindPopup(feature.properties['スポット名_日本語_']);
+    }
+  }).addTo(map);
+  L.esri.basemapLayer('Streets').addTo(map);
+  map.locate();
+
+  map.on("locationfound", function (e) {
+    map.setView(e.latlng);
+  });
+
+  // 到達圏解析タスクの初期化
+  function initDriveTimes(token) {
+    gpService = L.esri.GP.service({
+      url: "https://logistics.arcgis.com/arcgis/rest/services/World/ServiceAreas/GPServer/GenerateServiceAreas",
+      token: token,
+      asyncInterval: 1
+    });
+
+    gpTask = gpService.createTask();
+    gpTask.setParam('break_values', '5 10');
+    gpTask.setOutputParam('Service_Areas');
+
+    map.on('click', runDriveTimes);
+  }
+
+  // 到達圏解析の実行
+  function runDriveTimes(evt) {
+    map.off('click', runDriveTimes);
+    authPane.innerHTML = '取得中...';
+    gpTask.setParam('facilities', evt.latlng);
+    gpTask.run(driveTimeCallback);
+  }
+
+  // 到達圏解析のコールバック
+  function driveTimeCallback(error, response, raw){
+    authPane.innerHTML = '結果が表示されました';
+    var area;
+    var results = L.geoJson(response.Service_Areas, {
+      style: function (feature) {
+        if (feature.properties.ToBreak === 10) {
+          return {color: '#ff6600', fillColor: '#ff6600'};
+        }
+        else if (feature.properties.ToBreak === 5) {
+          area = feature;
+          return {color: '#ff0099', fillColor: '#ff0099'};
+        }
+      }
+    });
+    driveTimes.addLayer(results);
+    runQuery(area);
+  }
+
+  // 
+  function runQuery(area) {
+    // 空間検索用クエリ
+    var query = L.esri.query({
+      url: 'http://services3.arcgis.com/iH4Iz7CEdh5xTJYb/arcgis/rest/services/free_wifi_U8/FeatureServer/0' // 「無料公衆無線ＬＡＮスポット」（国土交通省観光庁）を加工
+    });
+    query.within(area);
+    // クエリの実行
+    query.run(function(error, featureCollection, response){
+      // クエリ結果の表示
+      filterResults.addData(featureCollection);
+    });
+  }
+</script>
+
+</body>
+</html>
