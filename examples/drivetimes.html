@@ -76,8 +76,11 @@
     e.preventDefault();
   });
 
+  }
+
   // 地図の初期化
-  var map = L.map('map').setView([39.36, -96.19], 4);
+  var map = L.map('map').setView([35.6792, 139.7406], 15);
+  map.locate();
   L.esri.basemapLayer('Streets').addTo(map);
 </script>
 
