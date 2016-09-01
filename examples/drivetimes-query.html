@@ -133,10 +133,10 @@
     var results = L.geoJson(response.Service_Areas, {
       style: function (feature) {
         if (feature.properties.ToBreak === 10) {
+          area = feature;
           return {color: '#ff6600', fillColor: '#ff6600'};
         }
         else if (feature.properties.ToBreak === 5) {
-          area = feature;
           return {color: '#ff0099', fillColor: '#ff0099'};
         }
       }
